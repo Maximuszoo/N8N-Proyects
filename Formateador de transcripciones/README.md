@@ -3,6 +3,8 @@
 ## Overview
 Automatically transforms raw academic transcriptions (with speech recognition errors) into clean, professionally formatted PDF documents using AI-powered text processing.
 
+<img width="1124" height="447" alt="Screenshot_20251207_144855" src="https://github.com/user-attachments/assets/23758d08-14fa-4c11-a274-127f19508b1e" />
+
 ## N8N Workflow
 
 ### Input
