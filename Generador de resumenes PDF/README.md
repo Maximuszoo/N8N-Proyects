@@ -3,6 +3,8 @@
 ## Overview
 Extracts and summarizes PDF documents applying the 80/20 Pareto principle to capture the most valuable 20% of content that provides 80% of the value, outputting professionally formatted PDF summaries.
 
+<img width="1109" height="470" alt="image" src="https://github.com/user-attachments/assets/1b76f3b7-9b62-441c-bdd0-11ced910e456" />
+
 ## N8N Workflow
 
 ### Input
