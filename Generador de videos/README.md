@@ -3,6 +3,8 @@
 ## Overview
 Creates synchronized educational videos with dynamic slides from text transcripts/scripts and audio files. Automatically generates slides with timestamps, applies professional styling, and synchronizes with audio narration.
 
+<img width="1104" height="533" alt="image" src="https://github.com/user-attachments/assets/9cf828f5-c353-41c2-9bc5-6f1afe9c9d7f" />
+
 ## N8N Workflow
 
 ### Input
