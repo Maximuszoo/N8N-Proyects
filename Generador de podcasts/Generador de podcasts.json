@@ -71,7 +71,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/maximo/Descargas/HOW PEOPLE USE CHATGPT.pdf",
+        "fileSelector": "/your/input/path/document.pdf",
         "options": {}
       },
       "type": "n8n-nodes-base.readWriteFile",
@@ -157,7 +157,7 @@
     },
     {
       "parameters": {
-        "command": "=/home/maximo/Entorno_Python/venv/bin/python3 \"/home/maximo/Código/Python/Programas N8N/Podcast_voces_mejoradas/Podcast.py\" \"/home/maximo/Descargas/guion.txt\" \"/home/maximo/Descargas/podcast_$(date +%Y%m%d_%H%M%S).mp3\""
+        "command": "=python3 \"/your/scripts/path/Podcast_voces_mejoradas/Podcast.py\" \"/your/output/path/guion.txt\" \"/your/output/path/podcast_$(date +%Y%m%d_%H%M%S).mp3\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -170,7 +170,7 @@
     },
     {
       "parameters": {
-        "command": "mv /home/maximo/Descargas/guion.txt \"/home/maximo/Descargas/guion_$(date +%Y%m%d_%H%M%S).txt\""
+        "command": "mv /your/output/path/guion.txt \"/your/output/path/guion_$(date +%Y%m%d_%H%M%S).txt\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -196,7 +196,7 @@
     },
     {
       "parameters": {
-        "command": "=cat <<EOF >> /home/maximo/Descargas/guion.txt\n{{ $json.output }}\n\nEOF"
+        "command": "=cat <<EOF >> /your/output/path/guion.txt\n{{ $json.output }}\n\nEOF"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,

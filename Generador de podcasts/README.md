@@ -10,7 +10,7 @@ Converts PDF documents into dynamic, conversational podcast audio with two AI-ge
 ### Input
 - **File Type**: PDF document
 - **Content**: Educational material, articles, or any text content
-- **Location**: Configurable file path (default: `/home/maximo/Descargas/`)
+- **Location**: Configurable file path (default: `~/Downloads/`)
 
 ### Workflow Steps
 
@@ -54,7 +54,7 @@ Converts PDF documents into dynamic, conversational podcast audio with two AI-ge
 
 7. **Text File Accumulation**
    - Appends generated dialogue JSON to cumulative text file
-   - Location: `/home/maximo/Descargas/guion.txt`
+   - Location: `~/Downloads/guion.txt`
    - Builds complete podcast script across all chunks
 
 8. **Audio Generation**
@@ -117,7 +117,7 @@ Converts PDF documents into dynamic, conversational podcast audio with two AI-ge
 1. Place your PDF content in the configured input path
 2. Execute the N8N workflow manually
 3. Wait for dialogue generation and audio synthesis
-4. Find your podcast MP3 in `/home/maximo/Descargas/`
+4. Find your podcast MP3 in `~/Downloads/`
 5. The script file is also saved for reference
 
 ## Podcast Characteristics

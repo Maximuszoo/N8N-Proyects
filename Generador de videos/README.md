@@ -10,7 +10,7 @@ Creates synchronized educational videos with dynamic slides from text transcript
 ### Input
 - **Text File**: Transcript or script with timing information (`.txt`)
 - **Audio File**: MP3 or WAV narration (referenced in workflow)
-- **Location**: Configurable file path (default: `/home/maximo/Descargas/`)
+- **Location**: Configurable file path (default: `~/Downloads/`)
 
 ### Workflow Steps
 
@@ -58,7 +58,7 @@ Creates synchronized educational videos with dynamic slides from text transcript
 
 8. **File Export**
    - Saves slides JSON to text file
-   - Location: `/home/maximo/Descargas/Escrito_presentación.txt`
+   - Location: `~/Downloads/Escrito_presentación.txt`
 
 9. **Video Generation**
    - Executes Python script: `generate_video.py`
@@ -147,7 +147,7 @@ Styles are automatically selected or can be configured in the Python script.
 3. Update file paths in N8N workflow if needed
 4. Execute the N8N workflow manually
 5. Wait for slide generation and video rendering
-6. Find your video in `/home/maximo/Descargas/`
+6. Find your video in `~/Downloads/`
 
 ## Slide Format Example
 

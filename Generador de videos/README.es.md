@@ -8,7 +8,7 @@ Crea videos educativos sincronizados con diapositivas dinámicas desde transcrip
 ### Entrada
 - **Archivo de Texto**: Transcripción o script con información de tiempos (`.txt`)
 - **Archivo de Audio**: Narración MP3 o WAV (referenciado en el flujo de trabajo)
-- **Ubicación**: Ruta de archivo configurable (predeterminado: `/home/maximo/Descargas/`)
+- **Ubicación**: Ruta de archivo configurable (predeterminado: `~/Descargas/`)
 
 ### Pasos del Flujo de Trabajo
 
@@ -56,7 +56,7 @@ Crea videos educativos sincronizados con diapositivas dinámicas desde transcrip
 
 8. **Exportación de Archivo**
    - Guarda JSON de diapositivas en archivo de texto
-   - Ubicación: `/home/maximo/Descargas/Escrito_presentación.txt`
+   - Ubicación: `~/Descargas/Escrito_presentación.txt`
 
 9. **Generación de Video**
    - Ejecuta script Python: `generate_video.py`
@@ -145,7 +145,7 @@ Los estilos se seleccionan automáticamente o se pueden configurar en el script 
 3. Actualiza rutas de archivo en el flujo de trabajo N8N si es necesario
 4. Ejecuta el flujo de trabajo N8N manualmente
 5. Espera la generación de diapositivas y renderizado de video
-6. Encuentra tu video en `/home/maximo/Descargas/`
+6. Encuentra tu video en `~/Descargas/`
 
 ## Ejemplo de Formato de Diapositiva
 

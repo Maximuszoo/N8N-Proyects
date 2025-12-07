@@ -10,7 +10,7 @@ Extracts and summarizes PDF documents applying the 80/20 Pareto principle to cap
 ### Input
 - **File Type**: PDF document
 - **Content**: Books, academic papers, reports, or any lengthy document
-- **Location**: Configurable file path (default: `/home/maximo/Descargas/`)
+- **Location**: Configurable file path (default: `~/Downloads/`)
 
 ### Workflow Steps
 
@@ -57,7 +57,7 @@ Extracts and summarizes PDF documents applying the 80/20 Pareto principle to cap
 
 8. **Markdown File Creation**
    - Saves complete summary as `.md` file
-   - Location: `/home/maximo/Descargas/resumen.md`
+   - Location: `~/Downloads/resumen.md`
 
 9. **PDF Generation**
    - Executes Python script: `PDFMaker.py`
@@ -94,7 +94,7 @@ Extracts and summarizes PDF documents applying the 80/20 Pareto principle to cap
 1. Place your PDF document in the configured input path
 2. Execute the N8N workflow manually
 3. Wait for summarization (time depends on document length)
-4. Find your summary PDF in `/home/maximo/Descargas/`
+4. Find your summary PDF in `~/Downloads/`
 5. Intermediate Markdown file is also saved
 
 ## Notes

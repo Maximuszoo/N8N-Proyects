@@ -8,7 +8,7 @@ Crea cuestionarios HTML interactivos con preguntas generadas por IA desde docume
 ### Entrada
 - **Tipo de Archivo**: Documento PDF
 - **Contenido**: Material educativo, contenido de estudio o documentación
-- **Ubicación**: Ruta de archivo configurable (predeterminado: `/home/maximo/Descargas/`)
+- **Ubicación**: Ruta de archivo configurable (predeterminado: `~/Descargas/`)
 
 ### Pasos del Flujo de Trabajo
 

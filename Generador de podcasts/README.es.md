@@ -8,7 +8,7 @@ Convierte documentos PDF en audio de podcast dinámico y conversacional con dos 
 ### Entrada
 - **Tipo de Archivo**: Documento PDF
 - **Contenido**: Material educativo, artículos o cualquier contenido de texto
-- **Ubicación**: Ruta de archivo configurable (predeterminado: `/home/maximo/Descargas/`)
+- **Ubicación**: Ruta de archivo configurable (predeterminado: `~/Descargas/`)
 
 ### Pasos del Flujo de Trabajo
 
@@ -52,7 +52,7 @@ Convierte documentos PDF en audio de podcast dinámico y conversacional con dos 
 
 7. **Acumulación de Archivo de Texto**
    - Añade JSON de diálogo generado a archivo de texto acumulativo
-   - Ubicación: `/home/maximo/Descargas/guion.txt`
+   - Ubicación: `~/Descargas/guion.txt`
    - Construye guion completo del podcast a través de todos los fragmentos
 
 8. **Generación de Audio**
@@ -115,7 +115,7 @@ Convierte documentos PDF en audio de podcast dinámico y conversacional con dos 
 1. Coloca tu contenido PDF en la ruta de entrada configurada
 2. Ejecuta el flujo de trabajo N8N manualmente
 3. Espera la generación del diálogo y síntesis de audio
-4. Encuentra tu podcast MP3 en `/home/maximo/Descargas/`
+4. Encuentra tu podcast MP3 en `~/Descargas/`
 5. El archivo de guion también se guarda como referencia
 
 ## Características del Podcast

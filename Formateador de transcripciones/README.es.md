@@ -8,7 +8,7 @@ Transforma automáticamente transcripciones académicas en bruto (con errores de
 ### Entrada
 - **Tipo de Archivo**: Archivo de texto plano (`.txt`)
 - **Contenido**: Transcripción en bruto con potenciales errores de reconocimiento de voz
-- **Ubicación**: Ruta de archivo configurable (predeterminado: `/home/maximo/Descargas/`)
+- **Ubicación**: Ruta de archivo configurable (predeterminado: `~/Descargas/`)
 
 ### Pasos del Flujo de Trabajo
 
@@ -48,7 +48,7 @@ Transforma automáticamente transcripciones académicas en bruto (con errores de
 
 8. **Creación de Archivo Markdown**
    - Guarda contenido procesado como archivo `.md`
-   - Ubicación: `/home/maximo/Descargas/resumen_transcripción.md`
+   - Ubicación: `~/Descargas/resumen_transcripción.md`
 
 9. **Generación de PDF**
    - Ejecuta script Python: `PDFMaker.py`
@@ -79,7 +79,7 @@ Transforma automáticamente transcripciones académicas en bruto (con errores de
 1. Coloca tu archivo de transcripción en la ruta de entrada configurada
 2. Ejecuta el flujo de trabajo N8N manualmente
 3. Espera el procesamiento (el tiempo depende de la longitud del documento)
-4. Encuentra tu PDF formateado en `/home/maximo/Descargas/`
+4. Encuentra tu PDF formateado en `~/Descargas/`
 
 ## Notas
 

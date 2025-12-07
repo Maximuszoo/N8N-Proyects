@@ -8,7 +8,7 @@ Extrae y resume documentos PDF aplicando el principio de Pareto 80/20 para captu
 ### Entrada
 - **Tipo de Archivo**: Documento PDF
 - **Contenido**: Libros, artículos académicos, informes o cualquier documento extenso
-- **Ubicación**: Ruta de archivo configurable (predeterminado: `/home/maximo/Descargas/`)
+- **Ubicación**: Ruta de archivo configurable (predeterminado: `~/Descargas/`)
 
 ### Pasos del Flujo de Trabajo
 
@@ -55,7 +55,7 @@ Extrae y resume documentos PDF aplicando el principio de Pareto 80/20 para captu
 
 8. **Creación de Archivo Markdown**
    - Guarda resumen completo como archivo `.md`
-   - Ubicación: `/home/maximo/Descargas/resumen.md`
+   - Ubicación: `~/Descargas/resumen.md`
 
 9. **Generación de PDF**
    - Ejecuta script Python: `PDFMaker.py`
@@ -92,7 +92,7 @@ Extrae y resume documentos PDF aplicando el principio de Pareto 80/20 para captu
 1. Coloca tu documento PDF en la ruta de entrada configurada
 2. Ejecuta el flujo de trabajo N8N manualmente
 3. Espera el resumen (el tiempo depende de la longitud del documento)
-4. Encuentra tu PDF de resumen en `/home/maximo/Descargas/`
+4. Encuentra tu PDF de resumen en `~/Descargas/`
 5. El archivo Markdown intermedio también se guarda
 
 ## Notas

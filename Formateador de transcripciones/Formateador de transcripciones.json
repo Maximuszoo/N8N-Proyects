@@ -69,7 +69,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/maximo/Descargas/Clase 9 - SD_transcripcion.txt",
+        "fileSelector": "/your/input/path/transcription.txt",
         "options": {}
       },
       "type": "n8n-nodes-base.readWriteFile",
@@ -155,7 +155,7 @@
     },
     {
       "parameters": {
-        "command": "=printf '%s\\n\\n' '{{ $json.output }}' >> /home/maximo/Descargas/resumen_transcripción.md"
+        "command": "=printf '%s\\n\\n' '{{ $json.output }}' >> /your/output/path/resumen_transcripción.md"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -169,7 +169,7 @@
     },
     {
       "parameters": {
-        "command": "=/home/maximo/Entorno_Python/venv/bin/python3 \"/home/maximo/Código/Python/Programas N8N/PDFMaker.py\" \"/home/maximo/Descargas/resumen_transcripción.md\" \"/home/maximo/Descargas/Resumen_transcripción_$(date +%Y%m%d_%H%M%S).pdf\""
+        "command": "=python3 \"/your/scripts/path/PDFMaker.py\" \"/your/output/path/resumen_transcripción.md\" \"/your/output/path/Resumen_transcripción_$(date +%Y%m%d_%H%M%S).pdf\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -182,7 +182,7 @@
     },
     {
       "parameters": {
-        "command": "mv \"/home/maximo/Descargas/resumen_transcripción.md\" \"/home/maximo/Descargas/resumen_transcripción_$(date +%Y%m%d_%H%M%S).md\""
+        "command": "mv \"/your/output/path/resumen_transcripción.md\" \"/your/output/path/resumen_transcripción_$(date +%Y%m%d_%H%M%S).md\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,

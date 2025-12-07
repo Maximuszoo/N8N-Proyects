@@ -10,7 +10,7 @@ Automatically transforms raw academic transcriptions (with speech recognition er
 ### Input
 - **File Type**: Plain text file (`.txt`)
 - **Content**: Raw transcription with potential speech recognition errors
-- **Location**: Configurable file path (default: `/home/maximo/Descargas/`)
+- **Location**: Configurable file path (default: `~/Downloads/`)
 
 ### Workflow Steps
 
@@ -50,7 +50,7 @@ Automatically transforms raw academic transcriptions (with speech recognition er
 
 8. **Markdown File Creation**
    - Saves processed content as `.md` file
-   - Location: `/home/maximo/Descargas/resumen_transcripción.md`
+   - Location: `~/Downloads/resumen_transcripción.md`
 
 9. **PDF Generation**
    - Executes Python script: `PDFMaker.py`
@@ -81,7 +81,7 @@ Automatically transforms raw academic transcriptions (with speech recognition er
 1. Place your transcription file in the configured input path
 2. Execute the N8N workflow manually
 3. Wait for processing (time depends on document length)
-4. Find your formatted PDF in `/home/maximo/Descargas/`
+4. Find your formatted PDF in `~/Downloads/`
 
 ## Notes
 

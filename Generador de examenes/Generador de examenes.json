@@ -69,7 +69,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/maximo/Descargas/ADS Parcial 2 V4.pdf",
+        "fileSelector": "/your/input/path/document.pdf",
         "options": {}
       },
       "type": "n8n-nodes-base.readWriteFile",
@@ -232,7 +232,7 @@
     },
     {
       "parameters": {
-        "command": "=printf \"%b\" \"{{ $json.html }}\" | iconv -f utf-8 -t utf-8 > \"/home/maximo/Descargas/examen_$(date +%Y%m%d_%H%M%S).html\"\n"
+        "command": "=printf \"%b\" \"{{ $json.html }}\" | iconv -f utf-8 -t utf-8 > \"/your/output/path/examen_$(date +%Y%m%d_%H%M%S).html\"\n"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,

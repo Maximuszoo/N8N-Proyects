@@ -10,7 +10,7 @@ Creates interactive HTML quizzes with AI-generated questions from PDF documents,
 ### Input
 - **File Type**: PDF document
 - **Content**: Educational material, study content, or documentation
-- **Location**: Configurable file path (default: `/home/maximo/Descargas/`)
+- **Location**: Configurable file path (default: `~/Downloads/`)
 
 ### Workflow Steps
 

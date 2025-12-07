@@ -71,7 +71,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/maximo/Descargas/podcast_20250922_174623_guion.txt",
+        "fileSelector": "/your/input/path/script.txt",
         "options": {}
       },
       "type": "n8n-nodes-base.readWriteFile",
@@ -157,7 +157,7 @@
     },
     {
       "parameters": {
-        "command": "=printf '%s\\n\\n' '{{ $json.output }}' >> /home/maximo/Descargas/Escrito_presentación.txt"
+        "command": "=printf '%s\\n\\n' '{{ $json.output }}' >> /your/output/path/slides_script.txt"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -198,7 +198,7 @@
     },
     {
       "parameters": {
-        "command": "/home/maximo/Entorno_Python/venv/bin/python3 \"/home/maximo/Código/Python/Programas N8N/Vidazor/generate_video.py\" \"/home/maximo/Descargas/Escrito_presentación.txt\" \"/home/maximo/Descargas/podcast.mp3\" \"/home/maximo/Descargas/Video_$(date +%Y%m%d_%H%M%S).mp4\""
+        "command": "python3 \"/your/scripts/path/Vidazor/generate_video.py\" \"/your/output/path/slides_script.txt\" \"/your/input/path/audio.mp3\" \"/your/output/path/Video_$(date +%Y%m%d_%H%M%S).mp4\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -211,7 +211,7 @@
     },
     {
       "parameters": {
-        "command": "mv /home/maximo/Descargas/Escrito_presentación.txt \"/home/maximo/Descargas/Escrito_presentación.txt_$(date +%Y%m%d_%H%M%S).txt\""
+        "command": "mv /your/output/path/slides_script.txt \"/your/output/path/slides_script_$(date +%Y%m%d_%H%M%S).txt\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -224,7 +224,7 @@
     },
     {
       "parameters": {
-        "command": "mv /home/maximo/Descargas/podcast.mp3 \"/home/maximo/Descargas/podcast_procesado_$(date +%Y%m%d_%H%M%S).mp3\""
+        "command": "mv /your/input/path/audio.mp3 \"/your/output/path/audio_procesado_$(date +%Y%m%d_%H%M%S).mp3\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
