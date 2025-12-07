@@ -3,6 +3,8 @@
 ## Overview
 Creates interactive HTML quizzes with AI-generated questions from PDF documents, featuring a modern Spotify-themed interface with automatic grading and timer.
 
+<img width="1114" height="478" alt="image" src="https://github.com/user-attachments/assets/231173de-dc63-401a-bf91-3c1434a0868d" />
+
 ## N8N Workflow
 
 ### Input
