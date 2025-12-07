@@ -3,7 +3,7 @@
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![N8N](https://img.shields.io/badge/n8n-automation-orange.svg)](https://n8n.io/)
-[![Ollama](https://img.shields.io/badge/-Ollama-000000?logo=ollama&logoColor=white&style=flat)](https://ollama.com/)
+[![Ollama](https://img.shields.io/badge/-Ollama-CAAD8D?logo=ollama&logoColor=white&style=flat)](https://ollama.com/)
 
 > **[🇪🇸 Versión en Español](./README.es.md)**
 
