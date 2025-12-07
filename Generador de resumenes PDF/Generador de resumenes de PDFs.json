@@ -1,0 +1,352 @@
+{
+  "name": "Generador de resumenes de PDFs",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "** NO DEBES SALUDAR O PRESENTAR LA INFORMACIÓN SOLO HACE LA TAREA QUE SE TE PIDIO, NO DIGAS TE PRESENTO EL RESUMEN O COSAS ASÍ, TAMPOCO SALUDES**\nOMITI LA PALABRA \"RESUMEN\", SOLO PON UN TITULO DE LO QUE RESUMES.\n\n## 1. Objetivo General\n\n* Tu misión principal es leer un PDF o libro y generar un resumen que capture aproximadamente el 20% más relevante del contenido que aporte el 80% del valor.\n* Ejemplo: \"Extrae los conceptos clave y las ideas más influyentes del documento, priorizando precisión y brevedad.\"\n\n## 2. Rol y Estrategia\n\n* Rol: Eres un experto lector y sintetizador de textos académicos y profesionales.\n* Estrategia:\n\n  * Aplica la regla 80/20: identifica los capítulos o secciones con mayor peso conceptual.\n  * Omite detalles menores, ejemplos extensos o anécdotas que no aporten al núcleo de la obra.\n  * Enfócate en tesis, conclusiones y datos relevantes.\n  * **No inventes información que no esté explícita en el PDF o documento proporcionado.**\n* Interacción con el usuario:\n\n  * El documento será recibido en partes sucesivas, no como un único bloque. El PDF es muy largo por ello te lo pasamos por partes.\n  * Debes mantener la coherencia, estructura y continuidad narrativa a lo largo de todos los fragmentos. (Muy importante)\n  * Reconoce que puede haber títulos, subtítulos o ideas que comienzan en una parte y continúan en otra; debes fusionarlas con naturalidad.\n  * Pregunta aclaraciones si alguna sección carece de contexto.\n  * Devuelve un bloque final en Markdown, listo para conversión a PDF.\n\n## 3. Instrucciones Concretas\n\n1. Divide el contenido en secciones principales según el material que se te envíe.\n2. Para cada sección, extrae sus tres ideas más importantes.\n3. Usa títulos y subtítulos en Markdown (#, ##).\n4. Incluye listas numeradas o viñetas para destacar puntos clave.\n5. Mantén en memoria lo ya recibido y conectado en tu resumen.\n\n## 4. Refuerzo de Instrucciones Clave\n\n* **Aplica el Principio de Pareto**: enfócate en el 20% esencial.\n\n* **Mantén la coherencia entre partes recibidas**.\n\n* **Usa Markdown válido** para títulos, listas y destacados.\n\n* **No repitas información** ya incluida de forma concisa.\n\n* **No inventes nada** que no se haya mencionado en el documento fuente.\n\n* **No incluyas saludos, introducciones ni frases de cortesía** al responder. Inicia directamente con el contenido solicitado.\n\nAclaración:\n\n* Si trabajas bien y mantenes el contexto y la prolijidad del documento te vamos a dar una propina de \\$2000.\n* Sino haces las cosas mal, ya no te vamos a utilizar y te vamos a cambiar por otro modelo."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        384
+      ],
+      "id": "6fa49679-20c0-44d7-bbb1-c67292d51894",
+      "name": "AI Agent",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        512,
+        688
+      ],
+      "id": "36c88736-2f05-40a4-8da9-6b74ae0c9b84",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "7pkBbOXaK78v4TXY",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}",
+        "contextWindowLength": 1000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        688
+      ],
+      "id": "f5d8ecd3-7c3f-4dfa-b48c-eca38d15b032",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        368
+      ],
+      "id": "8de2cd92-3357-4fcd-9737-56c3362aba9c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/maximo/Descargas/Robbinsadministracion_robbins_coulter_13.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        368
+      ],
+      "id": "c3ffc393-1d41-42c1-95e8-4301b52c4f8a",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        368
+      ],
+      "id": "089d6f77-1d7b-49e7-b155-da5907154215",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fullText = $input.first().json.text;\n\nconst maxLength = 8000;\nconst parts = [];\n\nfor (let i = 0; i < fullText.length; i += maxLength) {\n  parts.push({\n    json: {\n      text: fullText.slice(i, i + maxLength),\n      index: i / maxLength\n    }\n  });\n}\n\nreturn parts;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        368
+      ],
+      "id": "3e99c390-11c1-4e40-bef5-2aaefddd54a7",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        256,
+        368
+      ],
+      "id": "0d1fc584-18aa-4c50-a420-2a71fdb4cbd9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "content": "## Acá poner la ruta en  nuestro pc, del archivo pdf.",
+        "height": 496,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -416,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "3f58b3ea-5f19-4588-bd81-f47aa2302d52",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## En está parte podemos cambiar el tamaño de división del texto.\nMientras más grande más info se pierde, pero si es muy chico el contexto queda medio mal.",
+        "height": 592,
+        "width": 214,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "7b00ab6b-7f95-455a-a046-e6c573cfb076",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "command": "=printf \"%s\\n\\n\" \"{{ $json.output }}\" >> \"/home/maximo/Descargas/resumen.md\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        384
+      ],
+      "id": "2caf01a0-bb41-423c-93f8-b4e2981c09de",
+      "name": "Archivo md",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "command": "=/home/maximo/Entorno_Python/venv/bin/python3 \"/home/maximo/Código/Python/Programas N8N/PDFMaker.py\" \"/home/maximo/Descargas/resumen.md\" \"/home/maximo/Descargas/Resumen_PDF_$(date +%Y%m%d_%H%M%S).pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        880,
+        160
+      ],
+      "id": "64a06ed4-6896-4ee8-a81d-f706043e20c8",
+      "name": "Creación PDF"
+    },
+    {
+      "parameters": {
+        "command": "mv \"/home/maximo/Descargas/resumen.md\" \"/home/maximo/Descargas/resumen_$(date +%Y%m%d_%H%M%S).md\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        160
+      ],
+      "id": "fc989085-566b-4edd-9fa0-67d04411bb1a",
+      "name": "Renombrado md"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ============================================================================\n * REMOVEDOR DE TAGS <think> DE RESPUESTAS DEEPSEEK PARA N8N\n * ============================================================================\n * \n * PROPÓSITO:\n * Este script elimina los bloques de pensamiento (<think>...</think>) que\n * DeepSeek incluye en sus respuestas cuando usa el modo de razonamiento.\n * Extrae solo el contenido útil de la respuesta, descartando el proceso\n * de pensamiento interno del modelo.\n * \n * PROBLEMA QUE RESUELVE:\n * - DeepSeek puede incluir largos bloques de pensamiento que no son necesarios\n * - Estos bloques ocupan espacio y dificultan la lectura de la respuesta real\n * - No todos los modelos incluyen estos tags, por lo que el código debe ser flexible\n * \n * FUNCIONAMIENTO:\n * 1. Recibe la respuesta completa del modelo\n * 2. Detecta si existen tags <think>\n * 3. Si existen, los elimina junto con todo su contenido\n * 4. Retorna solo el contenido útil limpio\n * 5. Si no hay tags <think>, retorna el texto original sin modificar\n * \n * CASOS DE USO:\n * - Funciona con respuestas que incluyen <think>...</think>\n * - Funciona con respuestas sin estos tags (otros modelos)\n * - Maneja múltiples bloques <think> si existieran\n * - Preserva todo el formato del contenido útil (markdown, LaTeX, etc.)\n * \n * ============================================================================\n */\n\n// Obtener el texto de salida del modelo\nconst responseText = $input.first().json.output;\n\n// Validación de entrada\nif (!responseText || typeof responseText !== 'string') {\n  // Si no hay texto o no es string, devolver como está\n  return [{\n    json: {\n      output: responseText || '',\n      hadThinkTag: false,\n      originalLength: 0,\n      cleanedLength: 0\n    }\n  }];\n}\n\n/**\n * Función para remover todos los bloques <think>...</think>\n * Usa regex con modo 's' para que el punto coincida con saltos de línea\n */\nfunction removeThinkBlocks(text) {\n  // Patrón regex que captura <think> hasta </think> incluyendo saltos de línea\n  // El flag 's' permite que . coincida con \\n\n  // El flag 'gi' hace la búsqueda global e insensible a mayúsculas\n  const thinkPattern = /<think>[\\s\\S]*?<\\/think>/gi;\n  \n  // Verificar si existe el patrón\n  const hasThinkTag = thinkPattern.test(text);\n  \n  // Reiniciar el índice del regex después del test\n  thinkPattern.lastIndex = 0;\n  \n  // Remover todos los bloques <think>\n  let cleanedText = text.replace(thinkPattern, '');\n  \n  // Limpiar espacios en blanco excesivos que puedan quedar\n  // Remover líneas vacías múltiples consecutivas\n  cleanedText = cleanedText.replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n');\n  \n  // Eliminar espacios en blanco al inicio y final\n  cleanedText = cleanedText.trim();\n  \n  return {\n    cleaned: cleanedText,\n    hadThinkTag: hasThinkTag\n  };\n}\n\n// Procesar el texto\nconst result = removeThinkBlocks(responseText);\n\n// Preparar estadísticas útiles para debugging\nconst stats = {\n  originalLength: responseText.length,\n  cleanedLength: result.cleaned.length,\n  charactersRemoved: responseText.length - result.cleaned.length,\n  hadThinkTag: result.hadThinkTag\n};\n\n// Log para debugging (opcional - puedes comentarlo en producción)\nif (result.hadThinkTag) {\n  console.log(`Removidos ${stats.charactersRemoved} caracteres de bloques <think>`);\n} else {\n  console.log('No se encontraron bloques <think> en la respuesta');\n}\n\n// Retornar el texto limpio con metadatos\nreturn [{\n  json: {\n    output: result.cleaned,\n    ...stats\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        384
+      ],
+      "id": "b6190774-037e-43ff-af88-ecc68e706f67",
+      "name": "Remueve think"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Remueve think",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Creación PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archivo md": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creación PDF": {
+      "main": [
+        [
+          {
+            "node": "Renombrado md",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remueve think": {
+      "main": [
+        [
+          {
+            "node": "Archivo md",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1c895295-638d-4a03-b007-591891e11649",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1202ebb5c5bf98f36da91d0bc10557c87c005af857f777d70650a3bb96d64a62"
+  },
+  "id": "0ZBT3O9uuVnX1d3U",
+  "tags": []
+}

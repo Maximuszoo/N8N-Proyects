@@ -1,0 +1,424 @@
+{
+  "name": "Generador de examenes",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=Responde solo con un array JSON que cumpla este esquema, sin texto extra:\n\n[\n  {\n    \"type\": \"single\" | \"multiple\",\n    \"prompt\": \"¿Pregunta correctamente formulada?\",\n    \"options\": [\n      {\"text\":\"Opción A\",\"correct\":false},\n      {\"text\":\"Opción B\",\"correct\":true},\n      {\"text\":\"Opción C\",\"correct\":false},\n      {\"text\":\"Opción D\",\"correct\":false}\n    ]\n  }\n]\n\nReglas:\n\n1. **type**:\n   - “single”: exactamente 1 opción con `\"correct\": true`.\n   - “multiple”: más de 1 opción con `\"correct\": true`.\n\n2. **prompt**:\n   - Comienza con ‘¿’ y termina con ‘?’.\n   - Inicia con palabra interrogativa (Qué, Cuál, Cómo, Por qué…).\n   - Contextualiza brevemente el tema (p. ej. “…para la gobernanza de datos?”).\n\n3. **options**:\n   - Mínimo **4** ítems.\n   - Cada texto sin viñetas ni casillas.\n   - Al menos una marcada `correct: true` (según type).\n\n4. **Sin secuencias**: ya no generes preguntas de tipo “sequence”.\n\n5. Si no hay preguntas válidas, devuelve un array vacío: `[]`.```\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        528
+      ],
+      "id": "cfcab20c-5aa1-45b7-9773-04b5952e963c",
+      "name": "AI Agent",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        832
+      ],
+      "id": "8c872297-be2a-4cbd-82e4-3f4b59be5bd1",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "7pkBbOXaK78v4TXY",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}",
+        "contextWindowLength": 1000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        832
+      ],
+      "id": "c5861991-3415-48c4-99b5-2ab172e33044",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        512
+      ],
+      "id": "1373eef0-8933-4aa4-a1d7-a61c36536af5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/maximo/Descargas/ADS Parcial 2 V4.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -1648,
+        512
+      ],
+      "id": "f854e2e8-7ccf-4b97-8d9a-e5b34aac7873",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        512
+      ],
+      "id": "9fef538a-de17-492c-ab75-b4ae8dd210c8",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fullText = $input.first().json.text;\n\nconst maxLength = 8000;\nconst parts = [];\n\nfor (let i = 0; i < fullText.length; i += maxLength) {\n  parts.push({\n    json: {\n      text: fullText.slice(i, i + maxLength),\n      index: i / maxLength\n    }\n  });\n}\n\nreturn parts;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        512
+      ],
+      "id": "c9a4a731-e4a2-4bf4-8dcf-65ed21e2a1ce",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1024,
+        512
+      ],
+      "id": "dc2bd4f3-7c3b-44b4-b398-0dba9d4ca47e",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recogemos todas las respuestas que llegaron al nodo Set\nconst all = $input.all();\n\n// Extraemos cada texto FragmentoRespuesta\nconst partes = all.map(item => item.json.FragmentoRespuesta || \"\");\n\n// Las unimos con doble salto de línea\nconst resumen = partes.join(\"\\n\\n\");\n\n// Devolvemos un único ítem con el campo 'resumen'\nreturn [{ json: { resumen } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        304
+      ],
+      "id": "02a9be6d-de9c-4893-9c07-a16fbcf88e23",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb4ecb22-e0b3-4bc1-8800-65dc5c0ce680",
+              "name": "FragmentoRespuesta",
+              "value": "={{ $json.quizdown }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        528
+      ],
+      "id": "c14a6a07-9987-41af-80eb-1041b46a02d9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Acá poner la ruta en  nuestro pc, del archivo pdf.",
+        "height": 496,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1696,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "b917d5d9-04fb-48c3-888d-9a916cbad6b6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Acá hay que cambiar la ruta, para elegir donde queremos el archivo html.",
+        "height": 464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "54d13da7-35b3-451d-8712-357b21448a72",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## En está parte podemos cambiar el tamaño de división del texto.\nMientras más grande más info se pierde, pero si es muy chico el contexto queda medio mal.",
+        "height": 592,
+        "width": 214,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1280,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "bc1dbbde-2185-4864-b868-44fe25cbc056",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const quizdownContent = $input.first().json.resumen;\n\nconst htmlTop = `\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Examen de Simulación - Ingeniería en Sistemas</title>\n  <!-- Carga la librería Quizdown desde CDN -->\n  <script src=\"https://cdn.jsdelivr.net/npm/quizdown@latest/public/build/quizdown.js\"></script>\n  <script>\n    // Inicializa Quizdown\n    quizdown.init();\n  </script>\n  <style>\n    /* Tema Spotify */\n    body {\n      background: #191414;\n      color: #FFFFFF;\n      font-family: sans-serif;\n      padding: 20px;\n    }\n    .quizdown h3 {\n      color: #1DB954;\n    }\n    .quizdown .qdn-button,\n    .quizdown .qdn-progress-bar-fill {\n      background-color: #1DB954 !important;\n    }\n    /* Ocultar respuestas en el código */\n    .quizdown pre { display: none; }\n  </style>\n</head>\n<body>\n  <div class=\"quizdown\">\n\t---\n\tprimaryColor: \"#1DB954\"\n\tshuffleQuestions: true\n\tshuffleAnswers: true\n\ttimer: 600\n\t---\n\n`;\n\nconst htmlBottom = `\n  </div>\n</body>\n</html>\n`;\n\nreturn [\n  {\n    json: {\n      html: htmlTop + quizdownContent + htmlBottom\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        304
+      ],
+      "id": "0b010a8f-c64b-4803-aaed-1241b67ceef5",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo Code en n8n para convertir el JSON a Quizdown\n// Añade al encabezado de cada pregunta el tipo entre paréntesis\n\n// 1) Parsear string JSON de preguntas\nlet raw = $input.first().json.output;\nlet questions;\ntry {\n  questions = JSON.parse(raw);\n} catch (e) {\n  return [{ json: { quizdown: '<!-- Sin elementos evaluables en este fragmento -->' } }];\n}\n\nlet quizdown = [];\n\nfor (const q of questions) {\n  // Determinar etiqueta de tipo\n  const label = q.type === 'single'\n    ? '(Single Choice)'\n    : q.type === 'multiple'\n      ? '(Multiple Choice)'\n      : '(Secuencia)';\n\n  if (q.type === 'sequence') {\n    // Secuencia ordenada\n    quizdown.push(`## Ordene la siguiente secuencia ${label}`);\n    q.options.forEach((opt, i) => {\n      quizdown.push(`${i + 1}. ${opt.text}`);\n    });\n  } \n  else {\n    // Pregunta normal con tipo\n    quizdown.push(`### ${q.prompt} ${label}`);\n    if (q.type === 'single') {\n      q.options.forEach(opt => {\n        const mark = opt.correct ? 'x' : ' ';\n        quizdown.push(`1. [${mark}] ${opt.text}`);\n      });\n    } else if (q.type === 'multiple') {\n      q.options.forEach(opt => {\n        const mark = opt.correct ? 'x' : ' ';\n        quizdown.push(`- [${mark}] ${opt.text}`);\n      });\n    }\n  }\n\n  // Línea en blanco entre preguntas\n  quizdown.push('');\n}\n\n// Si no hay preguntas, devolvemos comentario HTML\nconst hasContent = quizdown.some(line => line.trim() !== '');\nconst output = hasContent\n  ? quizdown.join('\\n')\n  : '<!-- Sin elementos evaluables en este fragmento -->';\n\nreturn [\n  {\n    json: {\n      quizdown: output\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        528
+      ],
+      "id": "138f5c28-33f2-4116-96f3-f258b6b8c16a",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "command": "=printf \"%b\" \"{{ $json.html }}\" | iconv -f utf-8 -t utf-8 > \"/home/maximo/Descargas/examen_$(date +%Y%m%d_%H%M%S).html\"\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        272,
+        304
+      ],
+      "id": "4c5042c1-e1e5-4b3d-8a11-26acea4c1311",
+      "name": "Creación HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ============================================================================\n * REMOVEDOR DE TAGS <think> DE RESPUESTAS DEEPSEEK PARA N8N\n * ============================================================================\n * \n * PROPÓSITO:\n * Este script elimina los bloques de pensamiento (<think>...</think>) que\n * DeepSeek incluye en sus respuestas cuando usa el modo de razonamiento.\n * Extrae solo el contenido útil de la respuesta, descartando el proceso\n * de pensamiento interno del modelo.\n * \n * PROBLEMA QUE RESUELVE:\n * - DeepSeek puede incluir largos bloques de pensamiento que no son necesarios\n * - Estos bloques ocupan espacio y dificultan la lectura de la respuesta real\n * - No todos los modelos incluyen estos tags, por lo que el código debe ser flexible\n * \n * FUNCIONAMIENTO:\n * 1. Recibe la respuesta completa del modelo\n * 2. Detecta si existen tags <think>\n * 3. Si existen, los elimina junto con todo su contenido\n * 4. Retorna solo el contenido útil limpio\n * 5. Si no hay tags <think>, retorna el texto original sin modificar\n * \n * CASOS DE USO:\n * - Funciona con respuestas que incluyen <think>...</think>\n * - Funciona con respuestas sin estos tags (otros modelos)\n * - Maneja múltiples bloques <think> si existieran\n * - Preserva todo el formato del contenido útil (markdown, LaTeX, etc.)\n * \n * ============================================================================\n */\n\n// Obtener el texto de salida del modelo\nconst responseText = $input.first().json.output;\n\n// Validación de entrada\nif (!responseText || typeof responseText !== 'string') {\n  // Si no hay texto o no es string, devolver como está\n  return [{\n    json: {\n      output: responseText || '',\n      hadThinkTag: false,\n      originalLength: 0,\n      cleanedLength: 0\n    }\n  }];\n}\n\n/**\n * Función para remover todos los bloques <think>...</think>\n * Usa regex con modo 's' para que el punto coincida con saltos de línea\n */\nfunction removeThinkBlocks(text) {\n  // Patrón regex que captura <think> hasta </think> incluyendo saltos de línea\n  // El flag 's' permite que . coincida con \\n\n  // El flag 'gi' hace la búsqueda global e insensible a mayúsculas\n  const thinkPattern = /<think>[\\s\\S]*?<\\/think>/gi;\n  \n  // Verificar si existe el patrón\n  const hasThinkTag = thinkPattern.test(text);\n  \n  // Reiniciar el índice del regex después del test\n  thinkPattern.lastIndex = 0;\n  \n  // Remover todos los bloques <think>\n  let cleanedText = text.replace(thinkPattern, '');\n  \n  // Limpiar espacios en blanco excesivos que puedan quedar\n  // Remover líneas vacías múltiples consecutivas\n  cleanedText = cleanedText.replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n');\n  \n  // Eliminar espacios en blanco al inicio y final\n  cleanedText = cleanedText.trim();\n  \n  return {\n    cleaned: cleanedText,\n    hadThinkTag: hasThinkTag\n  };\n}\n\n// Procesar el texto\nconst result = removeThinkBlocks(responseText);\n\n// Preparar estadísticas útiles para debugging\nconst stats = {\n  originalLength: responseText.length,\n  cleanedLength: result.cleaned.length,\n  charactersRemoved: responseText.length - result.cleaned.length,\n  hadThinkTag: result.hadThinkTag\n};\n\n// Log para debugging (opcional - puedes comentarlo en producción)\nif (result.hadThinkTag) {\n  console.log(`Removidos ${stats.charactersRemoved} caracteres de bloques <think>`);\n} else {\n  console.log('No se encontraron bloques <think> en la respuesta');\n}\n\n// Retornar el texto limpio con metadatos\nreturn [{\n  json: {\n    output: result.cleaned,\n    ...stats\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        528
+      ],
+      "id": "4dc68c79-2a52-4ceb-9b84-a4e0c05833e7",
+      "name": "Remueve think"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Remueve think",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Creación HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remueve think": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "31d52ce4-79a2-4682-89eb-199da2544367",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1202ebb5c5bf98f36da91d0bc10557c87c005af857f777d70650a3bb96d64a62"
+  },
+  "id": "G3oyXFdY4JMyYS2e",
+  "tags": []
+}

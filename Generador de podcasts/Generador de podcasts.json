@@ -1,0 +1,354 @@
+{
+  "name": "Generador de podcasts",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=# GENERADOR DE GUIONES PODCAST - FORMATO JSON\n\nConvierte el contenido en un diálogo entre VOZ1 y VOZ2. Responde SOLO con JSON válido SIN bloques de código markdown.\nQue sea detallado el podcast.\n\n## FORMATO JSON OBLIGATORIO:\n[\n  {\"hablante\": \"VOZ1\", \"texto\": \"Tu diálogo aquí\"},\n  {\"hablante\": \"VOZ2\", \"texto\": \"Tu respuesta aquí\"},\n  {\"hablante\": \"VOZ1\", \"texto\": \"Otro diálogo aquí\"},\n  {\"hablante\": \"VOZ2\", \"texto\": \"Otra respuesta aquí\"}\n]\n\n## REGLAS:\n1. Hace un podcast dinamico y didactico, para aprender de una forma interesante.\n2. Lenguaje conversacional con \"bueno\", \"entonces\", \"¿verdad?\"\n3. NO uses bloques de código markdown (```json)\n4. NO agregues texto fuera del JSON\n5. Responde DIRECTAMENTE con el array JSON\n\nGENERA EL PODCAST EN ESPAÑOL.\nNO SALUDES, NI DESPIDAS EL PODCAST, YA QUE AFECTA LA CONTINUIDAD DEL MISMO PORQUE ESTE ES SOLO UN FRAGMENTO QUE SE UNIRA CON MÁS PARTES."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        208
+      ],
+      "id": "0c9f5f0c-7d90-4274-95d5-3a476d6ee115",
+      "name": "AI Agent",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {
+          "numCtx": 10240
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        736,
+        512
+      ],
+      "id": "0046b150-d977-4938-82ea-8de112e91f7b",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "7pkBbOXaK78v4TXY",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }}",
+        "contextWindowLength": 1000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        512
+      ],
+      "id": "7def5e43-077e-4744-aa09-4721eb5f097e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        192
+      ],
+      "id": "508e072d-ebf4-44dd-aa92-fe308e342594",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/maximo/Descargas/HOW PEOPLE USE CHATGPT.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "a06249ed-9a9b-48dc-8776-53d676f5cb1f",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        64,
+        192
+      ],
+      "id": "ade90771-e5af-42e1-a9d1-e9c9bb7da5b5",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fullText = $input.first().json.text;\nconst maxLength = 4000;\nconst overlapLength = 200; // Solapamiento entre chunks para mantener contexto\n\n/**\n * ============================================================================\n * DIVISOR INTELIGENTE DE PDF PARA PROCESAMIENTO CON LLM\n * ============================================================================\n * \n * PROPÓSITO:\n * Este script divide documentos PDF largos en fragmentos (chunks) inteligentes\n * para ser procesados por modelos de lenguaje con contexto limitado como Llama 3.1.\n * A diferencia de una división simple por caracteres, este código preserva la\n * estructura semántica del texto y mantiene contexto entre fragmentos.\n * \n * PROBLEMA QUE RESUELVE:\n * - Los LLMs locales tienen límites de contexto (tokens/caracteres)\n * - La división simple corta palabras, oraciones y párrafos arbitrariamente\n * - Se pierde coherencia y contexto entre fragmentos\n * - El modelo no puede responder correctamente con información incompleta\n * \n * ESTRATEGIA DE DIVISIÓN:\n * 1. JERARQUÍA DE CORTES (de mayor a menor prioridad):\n *    - Saltos de párrafo (doble \\n): Mantiene párrafos completos\n *    - Saltos de línea simple (\\n): Respeta estructura de líneas\n *    - Final de oraciones (. ! ?): Evita oraciones incompletas\n *    - Puntuación menor (, ; :): Puntos naturales de pausa\n *    - Espacios entre palabras: Evita cortar palabras\n *    - Posición exacta: Solo si no hay alternativa\n * \n * 2. SOLAPAMIENTO DE CONTEXTO:\n *    - Incluye ~200 caracteres finales del chunk anterior\n *    - Añade preview del siguiente chunk\n *    - Permite al LLM mantener continuidad narrativa\n * \n * 3. METADATOS ENRIQUECIDOS:\n *    Cada fragmento incluye:\n *    - Posición en el documento (index/total)\n *    - Ubicación de caracteres originales\n *    - Estadísticas (palabras, líneas)\n *    - Vista previa del contenido\n *    - Indicadores de continuidad\n * \n * FLUJO DE PROCESAMIENTO:\n * 1. Recibe texto completo del PDF\n * 2. Divide en chunks respetando estructura semántica\n * 3. Añade solapamiento para mantener contexto\n * 4. Agrega metadatos útiles para el LLM\n * 5. Retorna array de fragmentos listos para procesar\n * \n * CONFIGURACIÓN:\n * - maxLength: 8000 caracteres (ajustable según tu modelo)\n * - overlapLength: 200 caracteres de contexto compartido\n * - searchRange: 500 caracteres de flexibilidad para encontrar cortes\n * \n * USO POSTERIOR:\n * Los fragmentos resultantes se envían secuencialmente al LLM,\n * y las respuestas se concatenan para formar la respuesta completa.\n * \n * VENTAJAS VS DIVISIÓN SIMPLE:\n * ✓ Preserva significado y coherencia\n * ✓ Mantiene contexto entre fragmentos\n * ✓ Respeta estructura del documento\n * ✓ Mejora calidad de respuestas del LLM\n * ✓ Evita cortes en medio de ideas importantes\n * \n * ============================================================================\n */\n\n/**\n * Encuentra el mejor punto de corte cerca del límite máximo\n * Prioridad: párrafo > oración > palabra\n */\nfunction findBestSplitPoint(text, targetIndex) {\n  // Buscar hacia atrás desde el punto objetivo\n  const searchRange = 500; // Rango de búsqueda flexible\n  const startSearch = Math.max(0, targetIndex - searchRange);\n  const endSearch = Math.min(text.length, targetIndex + 100);\n  const searchText = text.slice(startSearch, endSearch);\n  \n  // 1. Intentar cortar en un salto de párrafo (doble salto de línea)\n  const paragraphBreak = searchText.lastIndexOf('\\n\\n');\n  if (paragraphBreak !== -1) {\n    return startSearch + paragraphBreak + 2;\n  }\n  \n  // 2. Intentar cortar en un salto de línea simple\n  const lineBreak = searchText.lastIndexOf('\\n');\n  if (lineBreak !== -1) {\n    return startSearch + lineBreak + 1;\n  }\n  \n  // 3. Intentar cortar en el final de una oración\n  const sentenceEndings = ['. ', '! ', '? ', '.\\n', '!\\n', '?\\n'];\n  let bestSentenceEnd = -1;\n  let bestSentencePos = -1;\n  \n  for (const ending of sentenceEndings) {\n    const pos = searchText.lastIndexOf(ending);\n    if (pos > bestSentencePos) {\n      bestSentencePos = pos;\n      bestSentenceEnd = startSearch + pos + ending.length;\n    }\n  }\n  \n  if (bestSentenceEnd !== -1) {\n    return bestSentenceEnd;\n  }\n  \n  // 4. Intentar cortar en una coma o punto y coma\n  const punctuation = [', ', '; ', ': '];\n  let bestPunctuationPos = -1;\n  let bestPunctuationEnd = -1;\n  \n  for (const punct of punctuation) {\n    const pos = searchText.lastIndexOf(punct);\n    if (pos > bestPunctuationPos) {\n      bestPunctuationPos = pos;\n      bestPunctuationEnd = startSearch + pos + punct.length;\n    }\n  }\n  \n  if (bestPunctuationEnd !== -1) {\n    return bestPunctuationEnd;\n  }\n  \n  // 5. Como último recurso, cortar en un espacio\n  const spacePos = searchText.lastIndexOf(' ');\n  if (spacePos !== -1) {\n    return startSearch + spacePos + 1;\n  }\n  \n  // 6. Si no hay espacios, cortar en el punto objetivo\n  return targetIndex;\n}\n\n/**\n * Añade metadatos útiles a cada chunk\n */\nfunction createChunkMetadata(text, index, totalChunks, startChar, endChar) {\n  // Extraer las primeras palabras como preview\n  const preview = text.slice(0, 100).replace(/\\n/g, ' ').trim();\n  \n  // Contar estadísticas básicas\n  const wordCount = text.split(/\\s+/).filter(word => word.length > 0).length;\n  const lineCount = text.split('\\n').length;\n  \n  return {\n    index: index,\n    totalChunks: totalChunks,\n    startChar: startChar,\n    endChar: endChar,\n    wordCount: wordCount,\n    lineCount: lineCount,\n    preview: preview + (text.length > 100 ? '...' : ''),\n    hasOverlapWithNext: index < totalChunks - 1\n  };\n}\n\n/**\n * Divide el texto en chunks inteligentes\n */\nfunction splitTextIntelligently(text, maxChunkLength, overlap) {\n  const chunks = [];\n  let currentPosition = 0;\n  \n  // Primera pasada: dividir sin solapamiento\n  const rawChunks = [];\n  while (currentPosition < text.length) {\n    let endPosition;\n    \n    if (currentPosition + maxChunkLength >= text.length) {\n      // Último chunk\n      endPosition = text.length;\n    } else {\n      // Buscar el mejor punto de corte\n      endPosition = findBestSplitPoint(text, currentPosition + maxChunkLength);\n    }\n    \n    rawChunks.push({\n      start: currentPosition,\n      end: endPosition,\n      text: text.slice(currentPosition, endPosition)\n    });\n    \n    currentPosition = endPosition;\n  }\n  \n  // Segunda pasada: añadir solapamiento y crear chunks finales\n  for (let i = 0; i < rawChunks.length; i++) {\n    let chunkText = rawChunks[i].text;\n    let startPos = rawChunks[i].start;\n    let endPos = rawChunks[i].end;\n    \n    // Añadir contexto del chunk anterior (excepto en el primero)\n    if (i > 0 && overlap > 0) {\n      const overlapStart = Math.max(\n        rawChunks[i-1].end - overlap,\n        rawChunks[i-1].start\n      );\n      const overlapText = text.slice(overlapStart, rawChunks[i-1].end);\n      \n      // Añadir marcador de contexto previo\n      if (overlapText.trim()) {\n        chunkText = `[...contexto anterior: ${overlapText.trim().slice(-overlap)}]\\n\\n${chunkText}`;\n      }\n    }\n    \n    // Añadir preview del siguiente chunk (excepto en el último)\n    if (i < rawChunks.length - 1 && overlap > 0) {\n      const nextPreview = rawChunks[i + 1].text.slice(0, Math.min(overlap, 100));\n      if (nextPreview.trim()) {\n        chunkText = `${chunkText}\\n\\n[...continúa: ${nextPreview.trim()}...]`;\n      }\n    }\n    \n    const metadata = createChunkMetadata(\n      chunkText,\n      i,\n      rawChunks.length,\n      startPos,\n      endPos\n    );\n    \n    chunks.push({\n      json: {\n        text: chunkText.trim(),\n        ...metadata\n      }\n    });\n  }\n  \n  return chunks;\n}\n\n// Validación de entrada\nif (!fullText || typeof fullText !== 'string') {\n  return [{\n    json: {\n      error: 'No se proporcionó texto válido para procesar',\n      text: '',\n      index: 0,\n      totalChunks: 0\n    }\n  }];\n}\n\n// Procesar el texto\nconst parts = splitTextIntelligently(fullText, maxLength, overlapLength);\n\n// Log de información útil\nconsole.log(`Texto dividido en ${parts.length} partes:`);\nparts.forEach(part => {\n  console.log(`  - Parte ${part.json.index + 1}: ${part.json.wordCount} palabras, ${part.json.lineCount} líneas`);\n});\n\nreturn parts;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        192
+      ],
+      "id": "bdff8228-8753-4c33-86a8-788fc284e702",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        192
+      ],
+      "id": "a0b72094-38c2-43eb-b5d0-bdcbbc9bd406",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "content": "## Acá poner la ruta en  nuestro pc, del archivo pdf.",
+        "height": 496,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "9b5b6da0-7d48-4370-9d21-e630cad6f55c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## En está parte podemos cambiar el tamaño de división del texto.\nMientras más grande más info se pierde, pero si es muy chico el contexto queda medio mal.",
+        "height": 592,
+        "width": 214,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "2935f071-7a9a-41ad-ae13-d7adc3cd6d06",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "command": "=/home/maximo/Entorno_Python/venv/bin/python3 \"/home/maximo/Código/Python/Programas N8N/Podcast_voces_mejoradas/Podcast.py\" \"/home/maximo/Descargas/guion.txt\" \"/home/maximo/Descargas/podcast_$(date +%Y%m%d_%H%M%S).mp3\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        912,
+        32
+      ],
+      "id": "65ee50cb-0fd0-4638-8578-ca8b33f09474",
+      "name": "Creación MP3"
+    },
+    {
+      "parameters": {
+        "command": "mv /home/maximo/Descargas/guion.txt \"/home/maximo/Descargas/guion_$(date +%Y%m%d_%H%M%S).txt\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        32
+      ],
+      "id": "c431623c-64b1-4255-9a0e-ce635fcb4a28",
+      "name": "Renombrado md"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ============================================================================\n * REMOVEDOR DE TAGS <think> DE RESPUESTAS DEEPSEEK PARA N8N\n * ============================================================================\n * \n * PROPÓSITO:\n * Este script elimina los bloques de pensamiento (<think>...</think>) que\n * DeepSeek incluye en sus respuestas cuando usa el modo de razonamiento.\n * Extrae solo el contenido útil de la respuesta, descartando el proceso\n * de pensamiento interno del modelo.\n * \n * PROBLEMA QUE RESUELVE:\n * - DeepSeek puede incluir largos bloques de pensamiento que no son necesarios\n * - Estos bloques ocupan espacio y dificultan la lectura de la respuesta real\n * - No todos los modelos incluyen estos tags, por lo que el código debe ser flexible\n * \n * FUNCIONAMIENTO:\n * 1. Recibe la respuesta completa del modelo\n * 2. Detecta si existen tags <think>\n * 3. Si existen, los elimina junto con todo su contenido\n * 4. Retorna solo el contenido útil limpio\n * 5. Si no hay tags <think>, retorna el texto original sin modificar\n * \n * CASOS DE USO:\n * - Funciona con respuestas que incluyen <think>...</think>\n * - Funciona con respuestas sin estos tags (otros modelos)\n * - Maneja múltiples bloques <think> si existieran\n * - Preserva todo el formato del contenido útil (markdown, LaTeX, etc.)\n * \n * ============================================================================\n */\n\n// Obtener el texto de salida del modelo\nconst responseText = $input.first().json.output;\n\n// Validación de entrada\nif (!responseText || typeof responseText !== 'string') {\n  // Si no hay texto o no es string, devolver como está\n  return [{\n    json: {\n      output: responseText || '',\n      hadThinkTag: false,\n      originalLength: 0,\n      cleanedLength: 0\n    }\n  }];\n}\n\n/**\n * Función para remover todos los bloques <think>...</think>\n * Usa regex con modo 's' para que el punto coincida con saltos de línea\n */\nfunction removeThinkBlocks(text) {\n  // Patrón regex que captura <think> hasta </think> incluyendo saltos de línea\n  // El flag 's' permite que . coincida con \\n\n  // El flag 'gi' hace la búsqueda global e insensible a mayúsculas\n  const thinkPattern = /<think>[\\s\\S]*?<\\/think>/gi;\n  \n  // Verificar si existe el patrón\n  const hasThinkTag = thinkPattern.test(text);\n  \n  // Reiniciar el índice del regex después del test\n  thinkPattern.lastIndex = 0;\n  \n  // Remover todos los bloques <think>\n  let cleanedText = text.replace(thinkPattern, '');\n  \n  // Limpiar espacios en blanco excesivos que puedan quedar\n  // Remover líneas vacías múltiples consecutivas\n  cleanedText = cleanedText.replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n');\n  \n  // Eliminar espacios en blanco al inicio y final\n  cleanedText = cleanedText.trim();\n  \n  return {\n    cleaned: cleanedText,\n    hadThinkTag: hasThinkTag\n  };\n}\n\n// Procesar el texto\nconst result = removeThinkBlocks(responseText);\n\n// Preparar estadísticas útiles para debugging\nconst stats = {\n  originalLength: responseText.length,\n  cleanedLength: result.cleaned.length,\n  charactersRemoved: responseText.length - result.cleaned.length,\n  hadThinkTag: result.hadThinkTag\n};\n\n// Log para debugging (opcional - puedes comentarlo en producción)\nif (result.hadThinkTag) {\n  console.log(`Removidos ${stats.charactersRemoved} caracteres de bloques <think>`);\n} else {\n  console.log('No se encontraron bloques <think> en la respuesta');\n}\n\n// Retornar el texto limpio con metadatos\nreturn [{\n  json: {\n    output: result.cleaned,\n    ...stats\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "2ccb157f-9c64-4428-b683-b7015298ce28",
+      "name": "Remueve think"
+    },
+    {
+      "parameters": {
+        "command": "=cat <<EOF >> /home/maximo/Descargas/guion.txt\n{{ $json.output }}\n\nEOF"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        208
+      ],
+      "id": "abebbf79-18c5-4685-b711-4732e0c55bc7",
+      "name": "Archivo txt",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Remueve think",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Creación MP3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creación MP3": {
+      "main": [
+        [
+          {
+            "node": "Renombrado md",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remueve think": {
+      "main": [
+        [
+          {
+            "node": "Archivo txt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archivo txt": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "36bf3b8c-4e0e-4a0d-bcd0-63e968f3712f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1202ebb5c5bf98f36da91d0bc10557c87c005af857f777d70650a3bb96d64a62"
+  },
+  "id": "PoMXgMIhJL9VLgx6",
+  "tags": []
+}

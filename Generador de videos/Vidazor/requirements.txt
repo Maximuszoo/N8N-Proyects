@@ -1,0 +1,3 @@
+# Dependencias para el generador de video con slides
+Pillow>=10.0.0
+jsonschema>=4.17.0

@@ -1,0 +1,54 @@
+[
+  {
+    "inicio": "00:00",
+    "fin": "00:10", 
+    "titulo": "Estilos Dinámicos",
+    "puntos": [
+      "Adaptación",
+      "ROI",
+      "Personalización"
+    ]
+  },
+  {
+    "inicio": "00:10",
+    "fin": "00:20", 
+    "titulo": "GenAI Divide",
+    "puntos": [
+      "Brecha",
+      "Implementación", 
+      "Resultados",
+      "Escalabilidad"
+    ]
+  },
+  {
+    "inicio": "00:20",
+    "fin": "00:30", 
+    "titulo": "Soluciones Efectivas",
+    "puntos": [
+      "Automatización",
+      "Eficiencia",
+      "Innovación"
+    ]
+  },
+  {
+    "inicio": "00:30",
+    "fin": "00:40", 
+    "titulo": "Transformación Digital",
+    "puntos": [
+      "Agilidad",
+      "Datos",
+      "Procesos",
+      "Tecnología"
+    ]
+  },
+  {
+    "inicio": "00:40",
+    "fin": "00:50", 
+    "titulo": "Métricas Clave",
+    "puntos": [
+      "KPIs",
+      "Benchmarks",
+      "Analytics"
+    ]
+  }
+]
