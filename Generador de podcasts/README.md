@@ -3,6 +3,8 @@
 ## Overview
 Converts PDF documents into dynamic, conversational podcast audio with two AI-generated speakers (VOZ1 and VOZ2), creating engaging educational content in MP3 format.
 
+<img width="1106" height="472" alt="image" src="https://github.com/user-attachments/assets/e859c01f-3f49-4f25-aa80-0f7e11ce500e" />
+
 ## N8N Workflow
 
 ### Input
